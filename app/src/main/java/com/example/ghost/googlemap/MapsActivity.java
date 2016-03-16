@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.location.LocationListener;
 import android.widget.Toast;
@@ -29,22 +31,25 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.vision.barcode.Barcode;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MapsActivity extends FragmentActivity implements LocationListener,View.OnClickListener {
+public class MapsActivity extends FragmentActivity implements LocationListener, View.OnClickListener {
 
     private GoogleMap mMap;
     private LocationManager locationManager;
     private TextView tvLatidue, tvLongitude, tvAltitude;
     private String provider;
-    private Button btnSatelite, btnHybrid, btnNormal;
+    private Button btnSatelite, btnHybrid, btnNormal, btnFind;
+    private String loc;
 
     Geocoder geocoder;
     Timer timer;
+    LocationListener listener;
 
 
     @Override
@@ -55,14 +60,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener,V
         btnSatelite = (Button) findViewById(R.id.btnSatellite);
         btnHybrid = (Button) findViewById(R.id.btnHybrid);
         btnNormal = (Button) findViewById(R.id.btnNormal);
+        btnFind = (Button) findViewById(R.id.btnFind);
+
 
         btnHybrid.setOnClickListener(this);
         btnSatelite.setOnClickListener(this);
         btnNormal.setOnClickListener(this);
+        btnFind.setOnClickListener(this);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
-
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
         provider = locationManager.getBestProvider(criteria, false);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -134,8 +142,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener,V
                 100,
                 this
         );
-        timer = new Timer();
-        timer.schedule(new GetLastLocation(), 20000);
+
     }
 
     private void setUpMapIfNeeded() {
@@ -176,7 +183,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener,V
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-  //      Location location = locationManager.getLastKnownLocation(provider);
+        //      Location location = locationManager.getLastKnownLocation(provider);
 //        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("Marker"));
     }
 
@@ -184,45 +191,54 @@ public class MapsActivity extends FragmentActivity implements LocationListener,V
     public void onLocationChanged(Location location) {
         tvLongitude = (TextView) findViewById(R.id.textView);
         tvLatidue = (TextView) findViewById(R.id.textView2);
-        //tvAltitude = (TextView) findViewById(R.id.textView3);
+       // tvAltitude = (TextView) findViewById(R.id.textView3);
 
         tvLongitude.setText(location.getLongitude() + "");
         tvLatidue.setText(location.getLatitude() + "");
-        //tvAltitude.setText(location.getAltitude() + "");
+       // tvAltitude.setText(location.getAltitude() + "");
         setMarker(new LatLng(location.getLatitude(), location.getLongitude()), "marker");
 
     }
 
     public void setMarker(LatLng latlng, String title) {
+
+
         if (mMap != null) {
 
 
             Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            System.out.println("loc.." + location);
-            if (location != null) {
-                String message = String.format("Location \n Longitude: %1$s \n Latitude: %2$s",
-                        location.getLongitude(), location.getLatitude());
-//                Toast.makeText(MapsActivity.this, message,
-//                        Toast.LENGTH_LONG).show();
-                System.out.println("address .." + message);
+            String country = "";
 
-                //acTextView.setText(message);
+            if (location != null) {
+
+
                 try {
-                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10); //<10>
+                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10);
+
+
                     for (Address address : addresses) {
-                        //System.out.println("my location .." + address.getAddressLine(0));
-//                        acTextView.setText(address.getAddressLine(0));
-                        //tvAltitude.setText(address.getAddressLine(0));
-                        Marker hamburg = mMap.addMarker(new MarkerOptions().position(latlng).snippet(address.getAddressLine(0)).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher)).flat(true)
+
+
+                        Marker hamburg = mMap.addMarker(new MarkerOptions().position(latlng).snippet(address.getAddressLine(0) + "," + address.getCountryName().toString()).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher)).flat(true)
                                 .title("I'm Here"));
+
+                        // tvAltitude.append(country+=addresses.get(0).getCountryName().toString());
+
 
                     }
 
                 } catch (IOException e) {
                     Log.e("LocateMe", "Could not get Geocoder data", e);
                 }
+            } else {
+                AlertDialog.Builder alertbox1 = new AlertDialog.Builder(MapsActivity.this);
+                alertbox1.setMessage("No GPS or network ..Signal please fill the location manually!");
+                alertbox1.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                    }
+                });
+                alertbox1.show();
             }
-
 
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -243,60 +259,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener,V
     }
 
 
-    class GetLastLocation extends TimerTask {
-
-        @Override
-        public void run() {
-            timer.cancel();
-            locationManager.removeUpdates(MapsActivity.this);
-
-            tvAltitude  = (TextView) findViewById(R.id.textView3);
-            if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            System.out.println("loc.." + location);
-            if (location != null) {
-                String message = String.format("Location \n Longitude: %1$s \n Latitude: %2$s",
-                        location.getLongitude(), location.getLatitude());
-//                Toast.makeText(MapsActivity.this, message,
-//                        Toast.LENGTH_LONG).show();
-                System.out.println("address .." + message);
-
-                //acTextView.setText(message);
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10); //<10>
-                    for (Address address : addresses) {
-                        //System.out.println("my location .." + address.getAddressLine(0));
-//                        acTextView.setText(address.getAddressLine(0));
-                        tvAltitude.setText(address.getAddressLine(0));
-
-                    }
-
-                } catch (IOException e) {
-                    Log.e("LocateMe", "Could not get Geocoder data", e);
-                }
-            } else {
-                AlertDialog.Builder alertbox1 = new AlertDialog.Builder(MapsActivity.this);
-                alertbox1.setMessage("No GPS or network ..Signal please fill the location manually!");
-                alertbox1.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                    }
-                });
-                alertbox1.show();
-            }
-        }
-
-//        return;
-    }
-
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnHybrid:
@@ -316,6 +278,112 @@ public class MapsActivity extends FragmentActivity implements LocationListener,V
                 mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
                 Toast.makeText(MapsActivity.this, "Tipe Normal", Toast.LENGTH_SHORT).show();
+
+                break;
+
+            case R.id.btnFind:
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                alertDialog.setTitle("Find");
+                alertDialog.setMessage("Enter Location");
+
+                final EditText input = new EditText(MapsActivity.this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+                input.setLayoutParams(lp);
+                alertDialog.setView(input);
+                //alertDialog.setIcon(R.drawable.key);
+
+                alertDialog.setPositiveButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                loc = input.getText().toString();
+
+
+                                Criteria criteria = new Criteria();
+                                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+
+                                if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                    // TODO: Consider calling
+                                    //    ActivityCompat#requestPermissions
+                                    // here to request the missing permissions, and then overriding
+                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                    //                                          int[] grantResults)
+                                    // to handle the case where the user grants the permission. See the documentation
+                                    // for ActivityCompat#requestPermissions for more details.
+                                    return;
+                                }
+                               // Location lat = locationManager.getLastKnownLocation(provider);
+
+                                if(mMap!=null) {
+
+
+
+                                        try {
+                                            List<Address> addresses = geocoder.getFromLocationName(loc, 50);
+
+
+                                            Address location = addresses.get(0);
+                                            location.getLatitude();
+                                            location.getLongitude();
+                                            tvAltitude = (TextView) findViewById(R.id.textView3);
+
+                                            tvAltitude.setText(location.getCountryName());
+
+                                            if (location != null){
+
+                                            LatLng currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
+
+
+
+
+
+                                                mMap.addMarker(
+                                                        new MarkerOptions()
+                                                                .position(new LatLng(location.getLatitude(), location.getLongitude()))
+                                                .snippet("Hello World!")
+                                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
+                                                        .flat(true)
+                                                        .title("I'm here!"));
+
+                                                // tvAltitude.append(country+=addresses.get(0).getCountryName().toString());
+
+                                                mMap.setMyLocationEnabled(true);
+                                                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                                                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
+                                                mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+
+
+                                            }else{
+                                                AlertDialog.Builder alertbox1 = new AlertDialog.Builder(MapsActivity.this);
+                                                alertbox1.setMessage("No GPS or network ..Signal please fill the location manually!");
+                                                alertbox1.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface arg0, int arg1) {
+                                                    }
+                                                });
+                                                alertbox1.show();
+                                            }
+
+
+                                        } catch (IOException e) {
+                                            Log.e("Location", "Location not found", e);
+                                        }
+                                }
+
+
+                            }
+                        });
+
+                alertDialog.setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+
+                alertDialog.show();
+
+
 
                 break;
 

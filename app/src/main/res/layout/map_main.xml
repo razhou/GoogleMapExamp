@@ -73,5 +73,11 @@
             android:layout_height="wrap_content"
             android:text="Normal"
             android:id="@+id/btnNormal" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Find"
+            android:id="@+id/btnFind" />
     </LinearLayout>
 </RelativeLayout>
