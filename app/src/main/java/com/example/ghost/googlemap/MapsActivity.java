@@ -15,13 +15,17 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.location.LocationListener;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -31,13 +35,13 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MapsActivity extends FragmentActivity implements LocationListener {
+public class MapsActivity extends FragmentActivity implements LocationListener,View.OnClickListener {
 
     private GoogleMap mMap;
     private LocationManager locationManager;
     private TextView tvLatidue, tvLongitude, tvAltitude;
     private String provider;
-
+    private Button btnSatelite, btnHybrid, btnNormal;
 
     Geocoder geocoder;
     Timer timer;
@@ -47,15 +51,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_main);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        //SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-        //   .findFragmentById(R.id.map);
-        // mapFragment.getMapAsync(this);
 
+        btnSatelite = (Button) findViewById(R.id.btnSatellite);
+        btnHybrid = (Button) findViewById(R.id.btnHybrid);
+        btnNormal = (Button) findViewById(R.id.btnNormal);
 
-
-
-
+        btnHybrid.setOnClickListener(this);
+        btnSatelite.setOnClickListener(this);
+        btnNormal.setOnClickListener(this);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -181,19 +184,47 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
     public void onLocationChanged(Location location) {
         tvLongitude = (TextView) findViewById(R.id.textView);
         tvLatidue = (TextView) findViewById(R.id.textView2);
-        tvAltitude = (TextView) findViewById(R.id.textView3);
+        //tvAltitude = (TextView) findViewById(R.id.textView3);
 
         tvLongitude.setText(location.getLongitude() + "");
         tvLatidue.setText(location.getLatitude() + "");
-        tvAltitude.setText(location.getAltitude() + "");
+        //tvAltitude.setText(location.getAltitude() + "");
         setMarker(new LatLng(location.getLatitude(), location.getLongitude()), "marker");
 
     }
 
     public void setMarker(LatLng latlng, String title) {
         if (mMap != null) {
-            Marker hamburg = mMap.addMarker(new MarkerOptions().position(latlng)
-                    .title("I'm Here"));
+
+
+            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            System.out.println("loc.." + location);
+            if (location != null) {
+                String message = String.format("Location \n Longitude: %1$s \n Latitude: %2$s",
+                        location.getLongitude(), location.getLatitude());
+//                Toast.makeText(MapsActivity.this, message,
+//                        Toast.LENGTH_LONG).show();
+                System.out.println("address .." + message);
+
+                //acTextView.setText(message);
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10); //<10>
+                    for (Address address : addresses) {
+                        //System.out.println("my location .." + address.getAddressLine(0));
+//                        acTextView.setText(address.getAddressLine(0));
+                        //tvAltitude.setText(address.getAddressLine(0));
+                        Marker hamburg = mMap.addMarker(new MarkerOptions().position(latlng).snippet(address.getAddressLine(0)).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher)).flat(true)
+                                .title("I'm Here"));
+
+                    }
+
+                } catch (IOException e) {
+                    Log.e("LocateMe", "Could not get Geocoder data", e);
+                }
+            }
+
+
+
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -218,6 +249,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
         public void run() {
             timer.cancel();
             locationManager.removeUpdates(MapsActivity.this);
+
+            tvAltitude  = (TextView) findViewById(R.id.textView3);
             if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -236,12 +269,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
 //                Toast.makeText(MapsActivity.this, message,
 //                        Toast.LENGTH_LONG).show();
                 System.out.println("address .." + message);
+
                 //acTextView.setText(message);
                 try {
                     List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10); //<10>
                     for (Address address : addresses) {
-                        System.out.println("my location .." + address.getAddressLine(0));
+                        //System.out.println("my location .." + address.getAddressLine(0));
 //                        acTextView.setText(address.getAddressLine(0));
+                        tvAltitude.setText(address.getAddressLine(0));
+
                     }
 
                 } catch (IOException e) {
@@ -260,6 +296,34 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
 
 //        return;
     }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btnHybrid:
+                mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+
+                Toast.makeText(MapsActivity.this, "Tipe Hybrid", Toast.LENGTH_SHORT).show();
+
+                break;
+            case R.id.btnSatellite:
+                mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+
+                Toast.makeText(MapsActivity.this, "Tipe Satelite", Toast.LENGTH_SHORT).show();
+
+                break;
+
+            case R.id.btnNormal:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+                Toast.makeText(MapsActivity.this, "Tipe Normal", Toast.LENGTH_SHORT).show();
+
+                break;
+
+        }
+
+
+    }
+
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
