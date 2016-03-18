@@ -14,11 +14,19 @@ import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.location.LocationListener;
 import android.widget.Toast;
@@ -34,11 +42,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.vision.barcode.Barcode;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, View.OnClickListener {
+import android.text.TextWatcher;
+
+public class MapsActivity extends FragmentActivity implements LocationListener, View.OnClickListener, TextWatcher {
 
     private GoogleMap mMap;
     private LocationManager locationManager;
@@ -46,10 +58,20 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private String provider;
     private Button btnSatelite, btnHybrid, btnNormal, btnFind;
     private String loc;
+    private EditText search;
+    // String names[] ={"A","B","C","D"};
+    int maxResults = 5;
+    ListView lv_search;
+
+
+    private ListAdapter adapter;
 
     Geocoder geocoder;
     Timer timer;
     LocationListener listener;
+
+   //ListAdd addlist = new ListAdd();
+    //coba variabel = new coba();
 
 
     @Override
@@ -61,12 +83,27 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         btnHybrid = (Button) findViewById(R.id.btnHybrid);
         btnNormal = (Button) findViewById(R.id.btnNormal);
         btnFind = (Button) findViewById(R.id.btnFind);
+        search = (EditText) findViewById(R.id.edtSrc);
+        lv_search = (ListView) findViewById(R.id.lv_src);
 
 
         btnHybrid.setOnClickListener(this);
         btnSatelite.setOnClickListener(this);
         btnNormal.setOnClickListener(this);
         btnFind.setOnClickListener(this);
+
+        search.addTextChangedListener(this);
+
+
+        search.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // lv_search.setVisibility(View.VISIBLE);
+
+                return false;
+            }
+        });
+
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -191,11 +228,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onLocationChanged(Location location) {
         tvLongitude = (TextView) findViewById(R.id.textView);
         tvLatidue = (TextView) findViewById(R.id.textView2);
-       // tvAltitude = (TextView) findViewById(R.id.textView3);
+        // tvAltitude = (TextView) findViewById(R.id.textView3);
 
         tvLongitude.setText(location.getLongitude() + "");
         tvLatidue.setText(location.getLatitude() + "");
-       // tvAltitude.setText(location.getAltitude() + "");
+        // tvAltitude.setText(location.getAltitude() + "");
         setMarker(new LatLng(location.getLatitude(), location.getLongitude()), "marker");
 
     }
@@ -282,110 +319,155 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 break;
 
             case R.id.btnFind:
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
-                alertDialog.setTitle("Find");
-                alertDialog.setMessage("Enter Location");
 
-                final EditText input = new EditText(MapsActivity.this);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-                input.setLayoutParams(lp);
-                alertDialog.setView(input);
+                //LayoutInflater inflater = getLayoutInflater();
+                //View alertlayout = inflater.inflate(R.layout.find_location, null);
+                //AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                //alertDialog.setTitle("Find");
+                //alertDialog.setMessage("Enter Location");
+
+                // search = (EditText)alertlayout.findViewById(R.id.edtLoc);
+
+                // final int maxResults = 5;
+
+
+                //final ListView loct = (ListView)alertlayout.findViewById(R.id.lv_loc);
+
+                //final List<String> locationNameList;
+
+                //  locationNameList = new ArrayList<String>();
+
+                //  adapter = new ArrayAdapter<String>(MapsActivity.this, android.R.layout.simple_spinner_item,locationNameList);
+                // loct.setAdapter(adapter);
+
+
+                // final EditText input = new EditText(MapsActivity.this);
+                //final ListView search = new ListView(MapsActivity.this);
+                // LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                //       LinearLayout.LayoutParams.MATCH_PARENT,
+                //     LinearLayout.LayoutParams.MATCH_PARENT);
+                //input.setLayoutParams(lp);
+                // alertDialog.setView(alertlayout);
+                //alertDialog.setView(search);
+
                 //alertDialog.setIcon(R.drawable.key);
 
-                alertDialog.setPositiveButton("Ok",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                loc = input.getText().toString();
+
+                //Criteria criteria = new Criteria();
+                //criteria.setAccuracy(Criteria.ACCURACY_FINE);
+
+                //   if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                //  return;
+                //  }
+                // Location lat = locationManager.getLastKnownLocation(provider);
+
+                //  if(mMap!=null) {
 
 
-                                Criteria criteria = new Criteria();
-                                criteria.setAccuracy(Criteria.ACCURACY_FINE);
-
-                                if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                                    // TODO: Consider calling
-                                    //    ActivityCompat#requestPermissions
-                                    // here to request the missing permissions, and then overriding
-                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                    //                                          int[] grantResults)
-                                    // to handle the case where the user grants the permission. See the documentation
-                                    // for ActivityCompat#requestPermissions for more details.
-                                    return;
-                                }
-                               // Location lat = locationManager.getLastKnownLocation(provider);
-
-                                if(mMap!=null) {
+                // if (loc==null){
+                //  Toast.makeText(MapsActivity.this,"Please Insert Your Location",Toast.LENGTH_SHORT).show();
+                // }else {
 
 
-
-                                        try {
-                                            List<Address> addresses = geocoder.getFromLocationName(loc, 50);
-
-
-                                            Address location = addresses.get(0);
-                                            location.getLatitude();
-                                            location.getLongitude();
-                                            tvAltitude = (TextView) findViewById(R.id.textView3);
-
-                                            tvAltitude.setText(location.getCountryName());
-
-                                            if (location != null){
-
-                                            LatLng currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
+                // try {
+                //  final List<Address> addresses = geocoder.getFromLocationName(loc, maxResults);
 
 
+                //  Address location = addresses.get(0);
+                //  location.getLatitude();
+                // location.getLongitude();
+                // tvAltitude = (TextView) findViewById(R.id.textView3);
+
+                // tvAltitude.setText(location.getCountryName());
 
 
+                // if (location != null) {
 
-                                                mMap.addMarker(
-                                                        new MarkerOptions()
-                                                                .position(new LatLng(location.getLatitude(), location.getLongitude()))
-                                                .snippet("Hello World!")
-                                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
-                                                        .flat(true)
-                                                        .title("I'm here!"));
+                // input.setOnTouchListener(new View.OnTouchListener() {
+                // @Override
+                //public boolean onTouch(View v, MotionEvent event) {
+                // / locationNameList.clear();
 
-                                                // tvAltitude.append(country+=addresses.get(0).getCountryName().toString());
+                // for (Address i : addresses) {
+                //      if (i.getFeatureName() == null) {
+                //  locationNameList.add("Unknown");
+                //  } else {
+                //   locationNameList.add(i.getFeatureName());
+                // }
+                // }
 
-                                                mMap.setMyLocationEnabled(true);
-                                                mMap.getUiSettings().setMyLocationButtonEnabled(true);
-                                                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
-                                                mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
-
-
-                                            }else{
-                                                AlertDialog.Builder alertbox1 = new AlertDialog.Builder(MapsActivity.this);
-                                                alertbox1.setMessage("No GPS or network ..Signal please fill the location manually!");
-                                                alertbox1.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
-                                                    public void onClick(DialogInterface arg0, int arg1) {
-                                                    }
-                                                });
-                                                alertbox1.show();
-                                            }
+                //adapter.notifyDataSetChanged();
 
 
-                                        } catch (IOException e) {
-                                            Log.e("Location", "Location not found", e);
-                                        }
-                                }
+                //  return false;
+                //  }
+                // });
 
 
-                            }
-                        });
-
-                alertDialog.setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-
-                alertDialog.show();
+                //LatLng currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
 
 
+                //mMap.addMarker(
+                // new MarkerOptions()
+                // .position(new LatLng(location.getLatitude(), location.getLongitude()))
+                // .snippet(location.getAddressLine(0) + "," + location.getCountryName())
+                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
+                //.flat(true)
+                //.title("Your Destination"));
 
-                break;
+                // tvAltitude.append(country+=addresses.get(0).getCountryName().toString());
+
+                // mMap.setMyLocationEnabled(true);
+                // mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                // mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
+                // mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+
+
+                //} else {
+                // AlertDialog.Builder alertbox1 = new AlertDialog.Builder(MapsActivity.this);
+                //  alertbox1.setMessage("No GPS or network ..Signal please fill the location manually!");
+                // alertbox1.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                // public void onClick(DialogInterface arg0, int arg1) {
+                //  }
+                // });
+                //alertbox1.show();
+                // }
+
+
+                // } catch (IOException e) {
+                //  Log.e("Location", "Location not found", e);
+                // }
+                // }
+                //}
+
+
+                //alertDialog.setPositiveButton("Ok",
+                // new DialogInterface.OnClickListener() {
+                //   public void onClick(DialogInterface dialog, int which) {
+
+
+                // }
+                // });
+
+                // alertDialog.setNegativeButton("Cancel",
+                //  new DialogInterface.OnClickListener() {
+                //  public void onClick(DialogInterface dialog, int which) {
+                //  dialog.cancel();
+                // }
+                //  });
+
+
+                //alertDialog.show();
+
+
+                //  break;
 
         }
 
@@ -405,6 +487,187 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     @Override
     public void onProviderDisabled(String provider) {
+
+    }
+
+
+    public void Address(String InAdd) {
+        ArrayList<HashMap<String,String>> list=new ArrayList<HashMap<String, String>>();
+
+        String [] from ={"feature","address"};
+        lv_search = (ListView) findViewById(R.id.lv_src);
+
+        List<String> locationNameList;
+
+        locationNameList = new ArrayList<String>();
+
+        adapter = new SimpleAdapter(this,list,R.layout.find_location,from,new int[]{R.id.txtFeature,R.id.txtAddress});
+        lv_search.setAdapter(adapter);
+
+
+
+        try {
+            List<Address> addresses = geocoder.getFromLocationName(InAdd, maxResults);
+
+            if ((addresses == null) || (addresses.isEmpty())) {
+                lv_search.setVisibility(View.GONE);
+                Toast.makeText(MapsActivity.this, "Location Unknown", Toast.LENGTH_SHORT).show();
+            } else {
+                Address location = addresses.get(0);
+                location.getLatitude();
+                location.getLongitude();
+                tvAltitude = (TextView) findViewById(R.id.textView3);
+
+                tvAltitude.setText(location.getCountryName());
+
+
+                if (location != null) {
+
+                    // input.setOnTouchListener(new View.OnTouchListener() {
+                    // @Override
+                    // public boolean onTouch(View v, MotionEvent event) {
+                    Toast.makeText(MapsActivity.this, "Found : " + addresses.size(), Toast.LENGTH_SHORT).show();
+
+                    locationNameList.clear();
+
+                    for (Address i : addresses) {
+                        HashMap<String, String> item = new HashMap<String, String>();
+                        if (i.getFeatureName() == null) {
+                            //locationNameList.add("Unknown");
+                            item.put("feature","Not Found");
+                            item.put("address","Not Found");
+                        } else {
+
+                           // locationNameList.add(i.getFeatureName());
+                            item.put("feature",i.getFeatureName());
+                            item.put("address",i.getAddressLine(0));
+
+                        }
+                        list.add(item);
+                    }
+
+                   // adapter.notifyDataSetChanged();
+
+                    lv_search.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            lv_search.setVisibility(View.GONE);
+                            HashMap<String, Object> obj = (HashMap<String, Object>) adapter.getItem(position);
+                            //String val = (String) lv_search.getItemAtPosition(position);
+
+                            String result = (String)obj.get("feature");
+
+                            try {
+                                List<Address> locationList = geocoder.getFromLocationName(result, 1);
+                                Address locList = locationList.get(0);
+
+                                LatLng currentPosition = new LatLng(locList.getLatitude(), locList.getLongitude());
+                                mMap.addMarker(
+                                        new MarkerOptions()
+                                                .position(new LatLng(locList.getLatitude(), locList.getLongitude()))
+                                                .snippet(locList.getAddressLine(0) + "," + locList.getCountryName())
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
+                                                .flat(true)
+                                                .title("Your Destination"));
+
+                                // tvAltitude.append(country+=addresses.get(0).getCountryName().toString());
+
+                                if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                    // TODO: Consider calling
+                                    //    ActivityCompat#requestPermissions
+                                    // here to request the missing permissions, and then overriding
+                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                    //                                          int[] grantResults)
+                                    // to handle the case where the user grants the permission. See the documentation
+                                    // for ActivityCompat#requestPermissions for more details.
+                                    return;
+                                }
+                                if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                    // TODO: Consider calling
+                                    //    ActivityCompat#requestPermissions
+                                    // here to request the missing permissions, and then overriding
+                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                    //                                          int[] grantResults)
+                                    // to handle the case where the user grants the permission. See the documentation
+                                    // for ActivityCompat#requestPermissions for more details.
+                                    return;
+                                }
+                                mMap.setMyLocationEnabled(true);
+                                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                                 mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
+                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    });
+
+                    //  return false;
+                    //  }
+                    // });
+
+
+                    //
+
+
+
+
+
+                } else {
+                    AlertDialog.Builder alertbox1 = new AlertDialog.Builder(MapsActivity.this);
+                    alertbox1.setMessage("No GPS or network ..Signal please fill the location manually!");
+                    alertbox1.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
+                        }
+                    });
+                    alertbox1.show();
+                }
+            }
+
+            }catch(IOException e){
+                Log.e("Location", "Location not found", e);
+            }
+
+
+
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        loc = search.getText().toString();
+        lv_search = (ListView)findViewById(R.id.lv_src);
+        //variabel.setLv_search((ListView)findViewById(R.id.lv_src));
+        if((loc==null)||(loc=="")){
+            lv_search.setVisibility(View.GONE);
+            //variabel.getLv_search().setVisibility(View.GONE);
+
+        }else{
+           lv_search.setVisibility(View.VISIBLE);
+            //variabel.getLv_search().setVisibility(View.VISIBLE);
+            Address(loc);
+
+        }
+
+
+
+
+
+
+
+
+
 
     }
 }

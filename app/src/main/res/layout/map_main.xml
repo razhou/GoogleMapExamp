@@ -23,7 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="horizontal"
-        android:weightSum="0.9">
+        android:weightSum="0.9"
+        android:id="@+id/linearLayout">
 
         <TextView
             android:id="@+id/textView"
@@ -80,4 +81,40 @@
             android:text="Find"
             android:id="@+id/btnFind" />
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/relativeLayout"
+        android:background="@android:color/background_light"
+        android:layout_below="@+id/linearLayout"
+        android:layout_centerHorizontal="true">
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Input Location"
+
+            android:id="@+id/edtSrc"
+
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:id="@+id/lv_src"
+            tools:listitem="@layout/find_location"
+            android:layout_below="@+id/edtSrc"
+            android:visibility="gone"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_alignRight="@+id/edtSrc"
+            android:layout_alignEnd="@+id/edtSrc" />
+
+
+    </RelativeLayout>
+
+
+
 </RelativeLayout>
